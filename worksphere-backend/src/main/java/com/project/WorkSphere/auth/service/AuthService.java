@@ -19,6 +19,9 @@ import org.springframework.security.authentication.DisabledException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.project.WorkSphere.auth.dto.RefreshResult;
+import com.project.WorkSphere.auth.entity.RefreshToken;
+
 
 @Service
 public class AuthService {
@@ -27,17 +30,73 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
    
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
     	
     	this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
+    }
+    
+    public void logout(String refreshToken) {
+        refreshTokenService.revokeRefreshToken(refreshToken);
+    }
+    
+    @Transactional
+    public String createRefreshToken(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new BadCredentialsException("User not found")
+                );
+
+        return refreshTokenService.createRefreshToken(user);
+    }
+    
+    @Transactional
+    public RefreshResult refresh(String rawToken) {
+
+        // 1. Validate the existing refresh token
+        RefreshToken oldToken =
+                refreshTokenService.validateRefreshToken(rawToken);
+
+        // 2. Get associated user
+        User user = oldToken.getUser();
+
+        // 3. Get current roles from database
+        Set<String> roles = user.getRoles()
+                .stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toSet());
+
+        // 4. Revoke the old refresh token
+        refreshTokenService.revokeRefreshToken(rawToken);
+
+        // 5. Generate a replacement refresh token
+        String newRefreshToken =
+                refreshTokenService.createRefreshToken(user);
+
+        // 6. Generate a new access token
+        String accessToken = jwtService.generateToken(
+                user.getEmail(),
+                roles.stream().toList()
+        );
+
+        AuthResponse response = new AuthResponse(
+                accessToken,
+                user.getEmail(),
+                roles
+        );
+
+        return new RefreshResult(response, newRefreshToken);
     }
 
     @Transactional

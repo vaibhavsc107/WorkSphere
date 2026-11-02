@@ -1,61 +1,70 @@
 
-import { useEffect, useState } from "react";
-import { testConnection } from "./services/testService";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import DashboardLayout from "./components/layout/DashboardLayout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+        <Route path="/login" element={<Login />} />
 
-    useEffect(() => {
+        <Route path="/register" element={<Register />} />
 
-        const fetchBackendData = async () => {
-
-            try {
-                const result = await testConnection();
-
-                setData(result);
+        <Route
+            path="/admin/dashboard"
+            element={
+                <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+                    <DashboardLayout>
+                    <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                    </DashboardLayout>
+                </ProtectedRoute>
             }
-            catch (err) {
-                setError(
-                    err.response?.data?.message ||
-                    err.message ||
-                    "Unable to connect to backend"
-                );
-            }
-            finally {
-                setLoading(false);
-            }
-        };
+        />
 
-        fetchBackendData();
 
-    }, []);
+        <Route
+          path="/hr/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "HR_MANAGER"]}>
+                <DashboardLayout>
+                    <h1 className="text-3xl font-bold">HR Dashboard</h1>
+                </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
 
-    if (loading) {
-        return <h2>Connecting to WorkSphere backend...</h2>;
-    }
+        <Route
+          path="/employee/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={[
+                "SUPER_ADMIN",
+                "HR_MANAGER",
+                "EMPLOYEE",
+              ]}
+            >
+                <DashboardLayout>
+                    <h1 className="text-3xl font-bold">Employee Dashboard</h1>
+                </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
 
-    if (error) {
-        return <h2>Connection failed: {error}</h2>;
-    }
-
-    return (
-        <div style={{ padding: "30px" }}>
-
-            <h1>WorkSphere</h1>
-
-            <h2>Backend Connection Status</h2>
-
-            <p>{data.message}</p>
-
-            <p>Application: {data.application}</p>
-
-            <p>Status: {data.status}</p>
-
-        </div>
-    );
+        <Route path="*" element={<Navigate to="/login" replace />} />
+        
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
