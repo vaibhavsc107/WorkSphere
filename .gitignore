@@ -68,3 +68,6 @@ logs/
 
 # Spring Boot configuration
 **/application.properties
+
+# Uploaded employee profile images
+worksphere-backend/uploads/

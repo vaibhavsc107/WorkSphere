@@ -6,14 +6,29 @@ import {
   Navigate,
 } from "react-router-dom";
 
+import { Toaster } from "sonner";
+import { toast } from "sonner";
+
+
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import EmployeeProfile from "./pages/employee/EmployeeProfile";
 
 function App() {
   return (
+
+    
     <BrowserRouter>
+
+    <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        duration={3000}
+      />
+
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -60,9 +75,26 @@ function App() {
           }
         />
 
+          <Route
+            path="/employee/profile"
+              element={
+              <ProtectedRoute allowedRoles={["EMPLOYEE"]}>
+                <EmployeeProfile />
+              </ProtectedRoute>
+              }
+            />
+
         <Route path="*" element={<Navigate to="/login" replace />} />
         
       </Routes>
+
+      
+
+<button
+  onClick={() => toast.success("Welcome to WorkSphere!")}
+>
+  Test Notification
+</button>
     </BrowserRouter>
   );
 }

@@ -1,315 +1,411 @@
 # WorkSphere -- Enterprise HR & Workforce Management System
 
-WorkSphere is an enterprise-style Human Resource Management System
-(HRMS) built as a Java full-stack project. It is designed to bring
-common workforce operations into one application, including employee
-administration, organizational structure, attendance, leave, payroll,
-performance, announcements, notifications and reporting.
+WorkSphere is a modular, role-based Human Resource Management System
+(HRMS) designed to manage employee information and core workforce
+operations. This repository contains the project implementation
+completed through **Phase 4**.
 
-The project is being developed as a **modular monolith**: a single
-Spring Boot backend organized by business feature, with a React frontend
-and MySQL database. This keeps the initial architecture maintainable
-while leaving room to extract selected modules into services later if
-required.
-
-> **Current status:** Phase 1 -- Project Foundation, Phase 2 -- Backend
-> Authentication & Authorization, and Phase 3 -- Frontend Authentication
-> Integration are completed. Phase 4 -- Employee Management is next.
-
-------------------------------------------------------------------------
+> **Project status:** Phases 1--4 completed. Phase 5 (Attendance
+> Management) is planned and has not yet been implemented.
 
 ## Table of Contents
 
-1.  [Project Overview](#1-project-overview)
-2.  [Project Goals](#2-project-goals)
-3.  [Technology Stack](#3-technology-stack)
-4.  [Architecture](#4-architecture)
-5.  [Repository Structure](#5-repository-structure)
-6.  [Local Development Requirements](#6-local-development-requirements)
-7.  [Environment Configuration](#7-environment-configuration)
-8.  [Run the Application](#8-run-the-application)
-9.  [Phase 1 -- Project Foundation](#9-phase-1--project-foundation)
-10. [Phase 2 -- Backend Authentication &
-    Authorization](#10-phase-2--backend-authentication--authorization)
-11. [Phase 3 -- Frontend Authentication
-    Integration](#11-phase-3--frontend-authentication-integration)
-12. [Authentication API Reference](#12-authentication-api-reference)
-13. [Roles and Access Rules](#13-roles-and-access-rules)
-14. [Database Design -- Current and
-    Planned](#14-database-design--current-and-planned)
-15. [Testing Guide](#15-testing-guide)
-16. [Git and Commit Workflow](#16-git-and-commit-workflow)
-17. [Security Considerations](#17-security-considerations)
-18. [Known Limitations and Future
-    Hardening](#18-known-limitations-and-future-hardening)
-19. [Roadmap](#19-roadmap)
-20. [Documentation](#20-documentation)
+-   [Project Overview](#project-overview)
+-   [Technology Stack](#technology-stack)
+-   [Architecture](#architecture)
+-   [Implemented Features](#implemented-features)
+-   [User Roles and Authorization](#user-roles-and-authorization)
+-   [Project Structure](#project-structure)
+-   [Prerequisites](#prerequisites)
+-   [Local Setup](#local-setup)
+-   [Environment Configuration](#environment-configuration)
+-   [Running the Application](#running-the-application)
+-   [API Overview](#api-overview)
+-   [Profile Image Storage](#profile-image-storage)
+-   [Testing and Verification](#testing-and-verification)
+-   [Security Notes](#security-notes)
+-   [Roadmap](#roadmap)
+-   [Git Workflow](#git-workflow)
 
-------------------------------------------------------------------------
+## Project Overview
 
-## 1. Project Overview
+**Name:** WorkSphere -- Enterprise HR & Workforce Management System
 
-**Project name:** WorkSphere\
-**Project type:** Enterprise HR & Workforce Management System\
-**Architecture:** Modular monolith\
-**Frontend:** React + JavaScript + Vite\
-**Backend:** Java + Spring Boot REST API\
-**Database:** MySQL\
-**API base path:** `/api/v1`
+**Architecture:** Modular monolith with a React frontend and Spring Boot
+REST API.
 
-WorkSphere is intended to support three main user roles:
+**Current implementation:** Project setup, authentication and
+authorization, React authentication integration, and
+department/designation/employee/profile management.
 
--   `SUPER_ADMIN`
--   `HR_MANAGER`
--   `EMPLOYEE`
+WorkSphere is being developed as a portfolio-level full-stack
+application. The backend exposes REST endpoints under `/api/v1`, while
+the frontend consumes them through Axios.
 
-The planned business modules include:
+## Technology Stack
 
--   Authentication and authorization
--   Employee management
--   Departments and designations
--   Attendance management
--   Leave management
--   Payroll management
--   Performance reviews
--   Notifications and announcements
--   Reports and audit logs
+  Layer                       Technologies
+  --------------------------- -------------------------------------------------
+  Frontend                    React 19, JavaScript, Vite
+  Styling and UI              Tailwind CSS v4, Lucide React, Sonner
+  Routing and state           React Router, Context API
+  HTTP client                 Axios
+  Backend                     Java 21, Spring Boot, Maven
+  Persistence                 Spring Data JPA, Hibernate
+  Database                    MySQL 8
+  Security                    Spring Security, JWT, BCrypt, refresh tokens
+  Validation                  Jakarta Bean Validation
+  API design                  REST
+  Planned API documentation   Swagger / OpenAPI
+  Planned testing             JUnit 5, Mockito, Vitest, React Testing Library
+  Planned delivery            Docker, GitHub Actions
 
-The current completed implementation focuses on the application
-foundation and authentication lifecycle. The remaining HR modules will
-be implemented in later phases.
+## Architecture
 
-## 2. Project Goals
-
--   Build a portfolio-quality Java full-stack application.
--   Apply layered Spring Boot design using controllers, services,
-    repositories, DTOs and entities.
--   Implement secure authentication and role-based authorization.
--   Build a feature-oriented React frontend.
--   Use MySQL for persistent application data.
--   Practice REST API design, validation, exception handling and
-    frontend/backend integration.
--   Add automated testing, containerization and CI/CD as the project
-    progresses.
-
-## 3. Technology Stack
-
-### Frontend
-
-  Technology     Purpose
-  -------------- --------------------------------------
-  React          Component-based user interface
-  JavaScript     Frontend programming language
-  Vite           Development server and build tooling
-  React Router   Client-side routing
-  Tailwind CSS   UI styling
-  Axios          HTTP client for backend APIs
-  Context API    Authentication state management
-  lucide-react   Interface icons
-
-### Backend
-
-  Technology        Purpose
-  ----------------- ---------------------------------------
-  Java 21           Backend programming language
-  Spring Boot       REST API and application framework
-  Maven             Dependency and build management
-  Spring Web        REST controllers and HTTP endpoints
-  Spring Security   Authentication and authorization
-  Spring Data JPA   Persistence abstraction
-  Hibernate         ORM implementation
-  Bean Validation   Request validation
-  JJWT              JWT access-token creation and parsing
-  BCrypt            Password hashing
-
-### Database and planned engineering tools
-
-  -----------------------------------------------------------------------
-  Technology                          Purpose / status
-  ----------------------------------- -----------------------------------
-  MySQL 8                             Relational database
-
-  Swagger / OpenAPI                   API documentation --
-                                      planned/configuration as project
-                                      progresses
-
-  JUnit 5                             Backend testing -- planned
-
-  Mockito                             Backend mocking -- planned
-
-  Vitest / React Testing Library      Frontend testing -- planned
-
-  Docker                              Containerization -- planned
-
-  GitHub Actions                      CI/CD -- planned
-  -----------------------------------------------------------------------
-
-## 4. Architecture
-
-WorkSphere currently follows a **modular monolith** approach.
+The application uses a **modular monolith**. Frontend and backend are
+separate applications in one repository.
 
 ``` text
-                    React Frontend
-                 React + Vite + Tailwind
-                           |
-                           | HTTP / JSON
-                           | Bearer access JWT
-                           | HttpOnly refresh cookie
-                           v
-                  Spring Boot REST API
-                       /api/v1
-                           |
-          +----------------+----------------+
-          |                |                |
-      Controllers       Services        Security
-          |                |                |
-          +----------------+----------------+
-                           |
-                     Repositories
-                           |
-                      Spring Data JPA
-                           |
-                         MySQL
+WorkSphere/
+├── worksphere-backend/       # Java 21 + Spring Boot REST API
+├── worksphere-frontend/      # React + Vite frontend
+├── database/                 # Database-related scripts/documentation
+├── docs/                     # Project documentation
+├── .gitignore
+└── README.md
 ```
 
-### Backend layering
-
--   **Controller:** accepts HTTP requests and returns HTTP responses.
--   **DTO:** defines request and response data contracts.
--   **Service:** contains business logic and transaction boundaries.
--   **Repository:** performs database operations.
--   **Entity:** maps Java objects to database tables.
--   **Security:** authenticates requests and enforces access rules.
-
-The backend base package is:
+Backend package root:
 
 ``` text
 com.project.WorkSphere
 ```
 
-Preserve this package name and casing in Java source files.
+The API base path is:
 
-## 5. Repository Structure
+``` text
+/api/v1
+```
 
-The project is maintained as a monorepo:
+Local development addresses:
+
+  Service               URL
+  --------------------- ------------------------------
+  React frontend        http://localhost:5173
+  Spring Boot backend   http://localhost:8085
+  REST API base         http://localhost:8085/api/v1
+  MySQL                 localhost:3306
+
+## Implemented Features
+
+### Phase 1 -- Project Setup and Integration
+
+-   Created the React frontend using Vite.
+-   Created the Spring Boot backend using Java 21 and Maven.
+-   Created the MySQL database `worksphere_db`.
+-   Configured JPA/Hibernate database connectivity.
+-   Added a test REST endpoint and configured CORS for local frontend
+    development.
+-   Connected React to Spring Boot using Axios and verified a JSON
+    response.
+-   Initialized a Git monorepo and added a root `.gitignore`.
+
+### Phase 2 -- Authentication and Authorization
+
+-   User registration and login endpoints.
+-   Password hashing using BCrypt.
+-   JWT access-token generation and validation.
+-   Stateless Spring Security configuration.
+-   JWT request filter using `OncePerRequestFilter`.
+-   Role-based authorization for `SUPER_ADMIN`, `HR_MANAGER`, and
+    `EMPLOYEE`.
+-   Refresh tokens generated using secure random bytes.
+-   SHA-256 hashes stored in the database instead of raw refresh tokens.
+-   Refresh-token rotation, logout revocation, and HttpOnly
+    refresh-token cookie.
+-   Protected dashboard endpoints for the three roles.
+
+Authentication endpoints:
+
+  -------------------------------------------------------------------------
+  Method                  Endpoint                  Purpose
+  ----------------------- ------------------------- -----------------------
+  POST                    `/api/v1/auth/register`   Register a standard
+                                                    employee account
+
+  POST                    `/api/v1/auth/login`      Authenticate and issue
+                                                    tokens
+
+  POST                    `/api/v1/auth/refresh`    Rotate refresh token
+                                                    and issue a new access
+                                                    token
+
+  POST                    `/api/v1/auth/logout`     Revoke refresh token
+                                                    and clear cookie
+  -------------------------------------------------------------------------
+
+Public registration assigns the `EMPLOYEE` role. Elevated roles must not
+be self-assigned through public registration.
+
+### Phase 3 -- React Authentication Integration
+
+-   Integrated the frontend with backend authentication APIs.
+-   Added an Axios API instance with credentials enabled.
+-   Added authentication service methods.
+-   Implemented `AuthContext` for user, access-token and session state.
+-   Restored sessions through the refresh endpoint during application
+    initialization.
+-   Added Axios request and response interceptors for Bearer-token
+    attachment and retry after access-token expiry.
+-   Added protected routes and role-aware navigation.
+-   Added login, registration and role-specific dashboard routes.
+-   Added employee profile navigation and dashboard layout.
+-   Verified login, logout, role access and browser-refresh session
+    persistence.
+
+### Phase 4 -- Department, Designation, Employee and Profile Management
+
+#### Department management
+
+-   Department entity and repository.
+-   Create, retrieve, update and deactivate operations.
+-   Duplicate department-name validation.
+-   Active-department retrieval.
+-   Role restrictions for administrative changes.
+
+#### Designation management
+
+-   Designation entity and repository.
+-   Create, retrieve, update and deactivate operations.
+-   Active designation retrieval and validation.
+-   Role restrictions for administrative changes.
+
+#### Employee management
+
+-   Employee entity linked to a user account.
+-   Employee code uniqueness validation.
+-   Department and designation associations.
+-   Employment status and gender enums.
+-   Employee creation, retrieval, update and deactivation.
+-   Validation that linked users exist, are active and are not already
+    assigned to another employee record.
+-   Employee summary endpoint.
+-   Backend role restrictions for administrative employee operations.
+
+#### Employee search and pagination
+
+`GET /api/v1/employees/search` supports:
+
+-   Text search across first name, last name, employee code and user
+    email.
+-   Department filter.
+-   Designation filter.
+-   Employment-status filter.
+-   Pagination.
+-   Sorting by a selected field and direction.
+-   Combining multiple filters.
+
+Example:
+
+``` http
+GET /api/v1/employees/search?search=Rahul&status=ACTIVE&page=0&size=5&sortBy=firstName&direction=asc
+```
+
+#### Employee self-service profile
+
+-   Authenticated employee profile retrieval.
+-   Employee profile update for permitted personal fields.
+-   Profile update validation.
+-   Employee self-service restrictions: employees cannot update their
+    employee code, account email, department, designation, joining date,
+    employment status or salary through the self-profile endpoint.
+
+Endpoints:
+
+  ------------------------------------------------------------------------
+  Method                  Endpoint                 Purpose
+  ----------------------- ------------------------ -----------------------
+  GET                     `/api/v1/employees/me`   Retrieve the
+                                                   authenticated employee
+                                                   profile
+
+  PUT                     `/api/v1/employees/me`   Update permitted
+                                                   personal profile fields
+  ------------------------------------------------------------------------
+
+#### Profile image management
+
+-   Upload profile image as multipart form data.
+-   Allowed image extensions and declared MIME types: JPG/JPEG, PNG and
+    WebP.
+-   Maximum upload size: 2 MB.
+-   Image content validation using Apache Commons Imaging.
+-   UUID-based stored filenames.
+-   Image retrieval through an authenticated endpoint.
+-   Image replacement and best-effort deletion of the previous file.
+-   Image removal and database-reference cleanup.
+-   Upload files stored locally under
+    `worksphere-backend/uploads/profiles/`.
+-   Upload directory excluded from Git.
+
+Endpoints:
+
+  --------------------------------------------------------------------------------------
+  Method                  Endpoint                               Purpose
+  ----------------------- -------------------------------------- -----------------------
+  POST                    `/api/v1/employees/me/profile-image`   Upload or replace
+                                                                 profile image
+
+  GET                     `/api/v1/employees/me/profile-image`   Retrieve authenticated
+                                                                 employee profile image
+
+  DELETE                  `/api/v1/employees/me/profile-image`   Remove authenticated
+                                                                 employee profile image
+  --------------------------------------------------------------------------------------
+
+#### Error handling
+
+A global exception handler returns structured error responses for
+handled errors, including validation errors, unreadable request bodies,
+oversized uploads and generic server failures. Oversized profile image
+uploads are mapped to HTTP 413.
+
+#### Employee profile frontend
+
+-   Profile details display.
+-   Edit profile form.
+-   Client-side field validation and field-level error messages.
+-   Profile image preview and upload.
+-   Profile image removal.
+-   Profile completion percentage.
+-   Loading skeleton.
+-   Sonner success/error notifications.
+-   Disabled controls while saving and duplicate-submit guard.
+-   Responsive layouts for mobile, tablet and desktop.
+
+## User Roles and Authorization
+
+  Role            General access
+  --------------- -----------------------------------
+  `SUPER_ADMIN`   Administrative access
+  `HR_MANAGER`    HR and employee-management access
+  `EMPLOYEE`      Employee self-service access
+
+Examples of role-protected dashboard endpoints:
+
+  ------------------------------------------------------------------------------
+  Method                  Endpoint                       Allowed roles
+  ----------------------- ------------------------------ -----------------------
+  GET                     `/api/v1/admin/dashboard`      SUPER_ADMIN
+
+  GET                     `/api/v1/hr/dashboard`         SUPER_ADMIN, HR_MANAGER
+
+  GET                     `/api/v1/employee/dashboard`   SUPER_ADMIN,
+                                                         HR_MANAGER, EMPLOYEE
+  ------------------------------------------------------------------------------
+
+Authorization must always be enforced by the backend. Frontend route
+protection is for user experience and is not a replacement for backend
+access control.
+
+## Project Structure
+
+The exact set of files may evolve as modules are added. The high-level
+structure is:
 
 ``` text
 WorkSphere/
 ├── worksphere-backend/
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       │   └── com/project/WorkSphere/
-│   │       │       ├── auth/
-│   │       │       │   ├── controller/
-│   │       │       │   ├── dto/
-│   │       │       │   ├── entity/
-│   │       │       │   ├── repository/
-│   │       │       │   └── service/
-│   │       │       ├── config/
-│   │       │       ├── role/
-│   │       │       │   ├── entity/
-│   │       │       │   └── repository/
-│   │       │       ├── security/
-│   │       │       └── user/
-│   │       │           ├── entity/
-│   │       │           └── repository/
-│   │       └── resources/
+│   ├── src/main/java/com/project/WorkSphere/
+│   │   ├── auth/
+│   │   ├── config/
+│   │   ├── department/
+│   │   ├── designation/
+│   │   ├── employee/
+│   │   ├── role/
+│   │   ├── security/
+│   │   └── storage/
+│   ├── src/main/resources/
+│   ├── uploads/               # Local runtime files; not committed
 │   └── pom.xml
-│
 ├── worksphere-frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── layout/
 │   │   ├── context/
 │   │   ├── hooks/
 │   │   ├── pages/
 │   │   ├── routes/
-│   │   └── services/
-│   ├── .env                 # local only; do not commit
-│   ├── package.json
-│   └── vite.config.js
-│
+│   │   ├── services/
+│   │   └── utils/
+│   ├── .env                   # Local environment file; not committed
+│   └── package.json
 ├── database/
 ├── docs/
-│   ├── Phase_1_Project_Setup_Report.docx
-│   ├── Phase_2_Authentication_Authorization_Report.docx
-│   └── WorkSphere_Phase_3_Implementation_Report.docx
 ├── .gitignore
 └── README.md
 ```
 
-This is a representative structure. The actual directory may contain
-additional files as modules are developed.
+## Prerequisites
 
-## 6. Local Development Requirements
+Install the following before running the project:
 
-Install the following:
+-   Java Development Kit (JDK) 21.
+-   Maven (or use the Maven wrapper if present).
+-   Node.js compatible with the installed Vite version.
+-   npm.
+-   MySQL Server 8.
+-   Git.
 
--   Java Development Kit (JDK) 21
--   Maven, or the Maven Wrapper if included
--   Node.js and npm
--   MySQL Server 8
--   Git
--   An IDE such as IntelliJ IDEA or VS Code
--   Postman for API testing
+## Local Setup
 
-### Local service addresses
+### 1. Clone the repository
 
-  Service        Address
-  -------------- --------------------------------
-  Frontend       `http://localhost:5173`
-  Backend        `http://localhost:8085`
-  API base URL   `http://localhost:8085/api/v1`
-  MySQL          `localhost:3306`
+``` bash
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+cd WorkSphere
+```
 
-## 7. Environment Configuration
-
-### 7.1 Create the database
-
-In MySQL, create the development database:
+### 2. Create the MySQL database
 
 ``` sql
 CREATE DATABASE worksphere_db;
 ```
 
-### 7.2 Backend configuration
+### 3. Configure backend properties
 
-Create the local file:
+Create or update:
 
 `worksphere-backend/src/main/resources/application.properties`
 
-Example configuration:
+Use your own local credentials and JWT secret. Example template:
 
 ``` properties
+spring.application.name=WorkSphere
 server.port=8085
 
 spring.datasource.url=jdbc:mysql://localhost:3306/worksphere_db
-spring.datasource.username=YOUR_DB_USERNAME
-spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.username=YOUR_MYSQL_USERNAME
+spring.datasource.password=YOUR_MYSQL_PASSWORD
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
-spring.flyway.enabled=false
+spring.servlet.multipart.max-file-size=2MB
+spring.servlet.multipart.max-request-size=2MB
+app.upload.profile-dir=uploads/profiles
 
-jwt.secret=YOUR_BASE64_JWT_SECRET
+jwt.secret=YOUR_BASE64_ENCODED_SECRET
 jwt.expiration=900000
 jwt.refresh-expiration=604800000
 ```
 
-Notes:
+This is a configuration template, not a production-ready
+secret-management strategy. Preserve any additional properties already
+required by the current application. Never commit real database
+credentials or JWT secrets.
 
--   Replace placeholders with your own local values.
--   `jwt.expiration=900000` represents 15 minutes.
--   `jwt.refresh-expiration=604800000` represents 7 days.
--   The project used Hibernate schema update during development.
--   Flyway was disabled during the initial development setup.
--   Do not commit the real `application.properties`, credentials or JWT
-    secret.
-
-### 7.3 Frontend configuration
+### 4. Configure frontend environment
 
 Create:
 
@@ -319,761 +415,305 @@ Create:
 VITE_API_BASE_URL=http://localhost:8085/api/v1
 ```
 
-Restart the Vite development server after changing Vite environment
-variables.
+Do not commit `.env`.
 
-## 8. Run the Application
-
-### 8.1 Start MySQL
-
-Ensure the MySQL service is running and `worksphere_db` exists.
-
-### 8.2 Start the backend
-
-Open a terminal in the project root:
-
-``` bash
-cd worksphere-backend
-```
-
-If the Maven Wrapper exists:
-
-**Windows PowerShell:**
-
-``` powershell
-.\mvnw.cmd spring-boot:run
-```
-
-**macOS / Linux:**
-
-``` bash
-./mvnw spring-boot:run
-```
-
-If the wrapper is not present:
-
-``` bash
-mvn spring-boot:run
-```
-
-The backend should start on:
-
-`http://localhost:8085`
-
-### 8.3 Start the frontend
-
-Open a second terminal:
+### 5. Install frontend dependencies
 
 ``` bash
 cd worksphere-frontend
 npm install
+```
+
+### 6. Start the backend
+
+Open a terminal:
+
+``` bash
+cd worksphere-backend
+mvn spring-boot:run
+```
+
+If the project includes Maven Wrapper, use `mvnw.cmd spring-boot:run` on
+Windows.
+
+### 7. Start the frontend
+
+Open another terminal:
+
+``` bash
+cd worksphere-frontend
 npm run dev
 ```
 
-Open:
+Open http://localhost:5173.
 
-`http://localhost:5173`
+## Environment Configuration
 
-## 9. Phase 1 -- Project Foundation
+Keep local secrets out of source control.
 
-**Status: Completed**
+Recommended ignored files and directories include:
 
-### Objective
+``` gitignore
+# Backend secrets / local config
+worksphere-backend/src/main/resources/application.properties
 
-Create the monorepo, configure the React and Spring Boot applications,
-connect the backend to MySQL, and verify frontend/backend communication.
+# Frontend environment files
+worksphere-frontend/.env
+worksphere-frontend/.env.*
 
-### Work completed
+# Runtime uploads
+worksphere-backend/uploads/
 
-1.  Created the root `WorkSphere` project directory.
-2.  Created separate `worksphere-frontend` and `worksphere-backend`
-    applications.
-3.  Created the React frontend using Vite.
-4.  Installed initial frontend dependencies, including Axios, React
-    Router and lucide-react.
-5.  Created the Spring Boot backend using Java 21 and Maven.
-6.  Configured the MySQL database `worksphere_db`.
-7.  Configured the backend datasource and JPA/Hibernate.
-8.  Configured the backend to run on port `8085`.
-9.  Created a test REST endpoint under `/api/v1/test`.
-10. Configured CORS to allow the frontend at `http://localhost:5173`.
-11. Connected React to Spring Boot using Axios.
-12. Verified that the frontend could receive a JSON response from the
-    backend.
-13. Initialized Git and organized the repository as a monorepo.
-14. Added `.gitignore` rules to keep local configuration and generated
-    files out of Git.
+# Build output and dependencies
+**/target/
+**/node_modules/
+**/dist/
 
-### Phase 1 outcome
-
-The frontend, backend and database foundation was established, and
-React-to-Spring Boot communication was verified.
-
-## 10. Phase 2 -- Backend Authentication & Authorization
-
-**Status: Completed**
-
-### Objective
-
-Implement user registration, secure password storage, JWT
-authentication, request authentication filters and role-based backend
-authorization.
-
-### 10.1 Roles
-
-The application defines:
-
--   `SUPER_ADMIN`
--   `HR_MANAGER`
--   `EMPLOYEE`
-
-Role names are represented by a Java enum and persisted as strings.
-
-### 10.2 User and role persistence
-
-Created the core persistence components:
-
--   `User` entity mapped to `users`.
--   `Role` entity mapped to `roles`.
--   Many-to-many association through `user_roles`.
--   `UserRepository`.
--   `RoleRepository`.
--   `RoleName` enum.
-
-The user repository fetches roles with the user for authentication use.
-
-### 10.3 Registration
-
-Implemented:
-
-`POST /api/v1/auth/register`
-
-Registration includes:
-
--   Email validation.
--   Password validation.
--   Duplicate email checking.
--   BCrypt password hashing.
--   Default assignment of the `EMPLOYEE` role.
-
-Public registration does not accept an elevated role from the client.
-This prevents users from self-assigning `HR_MANAGER` or `SUPER_ADMIN`.
-
-### 10.4 Login and password verification
-
-Implemented:
-
-`POST /api/v1/auth/login`
-
-The backend:
-
-1.  Finds the user by email.
-2.  Checks whether the account is active.
-3.  Verifies the submitted password using `PasswordEncoder.matches()`.
-4.  Loads the user's roles.
-5.  Generates a signed JWT access token.
-6.  Returns the token, email and roles in the authentication response.
-
-Passwords are hashed with BCrypt and are never decrypted.
-
-### 10.5 JWT service
-
-Implemented `JwtService` to:
-
--   Load the Base64-encoded signing secret from local configuration.
--   Generate signed JWT access tokens.
--   Set the email as the subject.
--   Include role claims.
--   Set issued-at and expiration timestamps.
--   Parse and verify signed claims.
--   Check token validity and expiration.
-
-### 10.6 JWT authentication filter
-
-Implemented `JwtAuthenticationFilter` using `OncePerRequestFilter`.
-
-The filter:
-
-1.  Reads the `Authorization` header.
-2.  Checks for the `Bearer` prefix.
-3.  Extracts and validates the JWT.
-4.  Loads the user and roles.
-5.  Checks that the user is active.
-6.  Converts roles into Spring Security authorities such as
-    `ROLE_SUPER_ADMIN`.
-7.  Sets the authenticated principal in the `SecurityContext`.
-
-### 10.7 Spring Security configuration
-
-Configured:
-
--   Stateless session management.
--   JWT filter before `UsernamePasswordAuthenticationFilter`.
--   Public registration and login endpoints.
--   Authentication for protected endpoints.
--   CORS for the frontend origin.
--   BCrypt `PasswordEncoder`.
--   Method-level security with `@EnableMethodSecurity`.
-
-### 10.8 Role-based authorization
-
-Added protected test endpoints for Admin, HR and Employee dashboards
-using `@PreAuthorize`.
-
-Examples:
-
-``` java
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
 ```
 
-``` java
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_MANAGER')")
-```
+If your project intentionally tracks a safe example environment file,
+name it `.env.example` and ensure it contains placeholders only. Review
+the existing root `.gitignore` before replacing it.
 
-``` java
-@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HR_MANAGER', 'EMPLOYEE')")
-```
+## Running the Application
 
-### Phase 2 outcome
+Run MySQL first, then the backend, then the frontend.
 
-The backend supports registration, BCrypt password verification,
-JWT-based authentication, stateless security and role-based endpoint
-authorization.
+-   Backend: http://localhost:8085
+-   Frontend: http://localhost:5173
+-   API prefix: http://localhost:8085/api/v1
 
-## 11. Phase 3 -- Frontend Authentication Integration
+The authentication and employee endpoints require the expected
+authentication and role permissions. Use an API client such as Postman
+for backend verification.
 
-**Status: Completed**
+## API Overview
 
-### Objective
+The following endpoints are implemented as of Phase 4. Exact
+request/response DTO fields should be checked in the source code.
 
-Connect the React application to the authentication backend, implement
-role-aware navigation and protected routes, and support a
-refresh-token-based session lifecycle.
+  ---------------------------------------------------------------------------------------------
+  Module            Method            Endpoint                                Access
+  ----------------- ----------------- --------------------------------------- -----------------
+  Auth              POST              `/api/v1/auth/register`                 Public
 
-### 11.1 Tailwind CSS setup
+  Auth              POST              `/api/v1/auth/login`                    Public
 
-Configured Tailwind CSS with Vite and imported Tailwind into the
-frontend stylesheet.
+  Auth              POST              `/api/v1/auth/refresh`                  Refresh cookie
 
-### 11.2 Axios API client
+  Auth              POST              `/api/v1/auth/logout`                   Refresh cookie
 
-Created:
+  Dashboard         GET               `/api/v1/admin/dashboard`               SUPER_ADMIN
 
-`src/services/api.js`
+  Dashboard         GET               `/api/v1/hr/dashboard`                  SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-The shared Axios client:
+  Dashboard         GET               `/api/v1/employee/dashboard`            Authenticated
+                                                                              roles
 
--   Uses `VITE_API_BASE_URL`.
--   Sets JSON content type.
--   Enables `withCredentials` so the browser can send and receive
-    refresh-token cookies.
+  Department        POST              `/api/v1/departments`                   SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-### 11.3 Authentication service
+  Department        GET               `/api/v1/departments`                   Authenticated
+                                                                              roles
 
-Created:
+  Department        GET               `/api/v1/departments/active`            Authenticated
+                                                                              roles
 
-`src/services/authService.js`
+  Department        GET               `/api/v1/departments/{id}`              Authenticated
+                                                                              roles
 
-Provides:
+  Department        PUT               `/api/v1/departments/{id}`              SUPER_ADMIN,
+                                                                              HR_MANAGER
 
--   `registerUser(userData)`
--   `loginUser(credentials)`
+  Department        PATCH             `/api/v1/departments/{id}/deactivate`   SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-### 11.4 Authentication context
+  Designation       Various           `/api/v1/designations/**`               As configured by
+                                                                              controller
 
-Created:
+  Employee          POST              `/api/v1/employees`                     SUPER_ADMIN,
+                                                                              HR_MANAGER
 
--   `src/context/authContext.js`
--   `src/context/AuthContext.jsx`
--   `src/hooks/useAuth.js`
+  Employee          GET               `/api/v1/employees`                     SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-The provider manages:
+  Employee          GET               `/api/v1/employees/{id}`                SUPER_ADMIN,
+                                                                              HR_MANAGER
 
--   `user`
--   `accessToken`
--   `isAuthenticated`
--   `isInitializing`
--   `login()`
--   `logout()`
+  Employee          PUT               `/api/v1/employees/{id}`                SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-The access token is stored in React memory. It is not persisted in
-localStorage.
+  Employee          PATCH             `/api/v1/employees/{id}/deactivate`     SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-### 11.5 Login and registration pages
+  Employee          GET               `/api/v1/employees/active`              SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-Created:
+  Employee          GET               `/api/v1/employees/summaries`           SUPER_ADMIN,
+                                                                              HR_MANAGER
 
--   Login page with email/password input, password visibility, loading
-    and error states.
--   Registration page with email/password/confirm-password validation.
--   Successful registration redirects to login.
--   Successful login routes users according to their roles.
+  Employee          GET               `/api/v1/employees/search`              SUPER_ADMIN,
+                                                                              HR_MANAGER
 
-### 11.6 Protected routes
+  Employee          GET               `/api/v1/employees/me`                  Authenticated
+                                                                              roles
 
-Created `ProtectedRoute.jsx`.
+  Employee          PUT               `/api/v1/employees/me`                  Authenticated
+                                                                              roles
 
-It checks authentication and allowed roles before rendering protected
-dashboard content. It waits for session restoration to finish before
-deciding whether to redirect.
+  Profile image     POST              `/api/v1/employees/me/profile-image`    Authenticated
+                                                                              roles
 
-The frontend route guard is for navigation and user experience. The
-backend remains responsible for enforcing security.
+  Profile image     GET               `/api/v1/employees/me/profile-image`    Authenticated
+                                                                              roles
 
-### 11.7 Dashboard layout and role-aware navigation
+  Profile image     DELETE            `/api/v1/employees/me/profile-image`    Authenticated
+                                                                              roles
+  ---------------------------------------------------------------------------------------------
 
-Created `DashboardLayout.jsx` with a sidebar and logout action.
-
-Navigation visibility:
-
-  Role            Dashboard links       Management links
-  --------------- --------------------- ------------------------
-  `SUPER_ADMIN`   Admin, HR, Employee   Employees, Departments
-  `HR_MANAGER`    HR, Employee          Employees, Departments
-  `EMPLOYEE`      Employee              None
-
-The dashboard routes are:
-
-  Route                   Allowed roles
-  ----------------------- -----------------------------------------
-  `/admin/dashboard`      `SUPER_ADMIN`
-  `/hr/dashboard`         `SUPER_ADMIN`, `HR_MANAGER`
-  `/employee/dashboard`   `SUPER_ADMIN`, `HR_MANAGER`, `EMPLOYEE`
-
-These route permissions are also enforced by backend authorization for
-API resources as those modules are developed.
-
-### 11.8 Refresh-token backend support
-
-Added:
-
--   `RefreshToken` entity.
--   `RefreshTokenRepository`.
--   `RefreshTokenService`.
--   `RefreshResult` DTO.
--   Login cookie issuance.
--   Refresh endpoint.
--   Logout endpoint.
--   Credentialed CORS configuration.
-
-The refresh token is generated using `SecureRandom`. Its SHA-256 hash is
-stored in MySQL; the raw token is delivered to the browser in an
-HttpOnly cookie.
-
-The refresh-token record includes:
-
--   Token hash.
--   Associated user.
--   Expiration timestamp.
--   Revocation status.
--   Creation timestamp.
-
-### 11.9 Refresh-token rotation
-
-`POST /api/v1/auth/refresh`:
-
-1.  Reads the refresh cookie.
-2.  Hashes the supplied token and finds its database record.
-3.  Checks revocation, expiration and account status.
-4.  Revokes the old refresh-token record.
-5.  Creates a replacement refresh token.
-6.  Generates a new access JWT using current database roles.
-7.  Returns the new access token and sets the replacement cookie.
-
-### 11.10 Axios interceptors
-
-Created `src/services/setupInterceptors.js`.
-
-The request interceptor attaches the current access token as a Bearer
-token.
-
-The response interceptor handles an eligible 401 response by attempting
-refresh and retrying the original request once. Login, refresh and
-logout requests are excluded from the refresh retry path.
-
-### 11.11 Session restoration
-
-When the React application starts, `AuthProvider` calls the refresh
-endpoint.
-
--   If the refresh cookie is valid, the backend rotates it and returns a
-    new access token and user details.
--   The frontend restores the user and roles.
--   `isInitializing` prevents protected routes from redirecting while
-    restoration is in progress.
--   If restoration fails, the frontend clears the in-memory session and
-    displays the public login route.
-
-### 11.12 Logout
-
-The frontend calls:
-
-`POST /api/v1/auth/logout`
-
-The backend revokes the refresh-token record and clears the cookie. The
-frontend clears user and access-token state and navigates to the login
-page.
-
-### Phase 3 outcome
-
-The frontend and backend authentication lifecycle is integrated.
-Registration, login, role-based dashboard navigation, session
-restoration, access-token renewal and backend-backed logout were
-implemented and exercised during development.
-
-## 12. Authentication API Reference
-
-The current authentication endpoints are:
-
-  -------------------------------------------------------------------------------
-  Method            Endpoint                  Access            Purpose
-  ----------------- ------------------------- ----------------- -----------------
-  POST              `/api/v1/auth/register`   Public            Register a user
-                                                                with default
-                                                                `EMPLOYEE` role
-
-  POST              `/api/v1/auth/login`      Public            Verify
-                                                                credentials,
-                                                                return access
-                                                                token and set
-                                                                refresh cookie
-
-  POST              `/api/v1/auth/refresh`    Refresh cookie    Rotate refresh
-                                                                token and issue a
-                                                                new access token
-
-  POST              `/api/v1/auth/logout`     Refresh cookie if Revoke refresh
-                                              present           session and clear
-                                                                cookie
-  -------------------------------------------------------------------------------
-
-### Example registration request
-
-``` http
-POST /api/v1/auth/register
-Content-Type: application/json
-```
-
-``` json
-{
-  "email": "employee@example.com",
-  "password": "ExamplePass123"
-}
-```
-
-### Example login request
-
-``` http
-POST /api/v1/auth/login
-Content-Type: application/json
-```
-
-``` json
-{
-  "email": "employee@example.com",
-  "password": "ExamplePass123"
-}
-```
-
-The successful login response contains an access token, token type,
-email and role names. The refresh token is sent separately as an
-HttpOnly cookie.
-
-### Refresh request
-
-``` http
-POST /api/v1/auth/refresh
-```
-
-The browser or API client must send the refresh-token cookie.
-
-### Logout request
-
-``` http
-POST /api/v1/auth/logout
-```
-
-The backend revokes the refresh-token record and expires the cookie.
-
-## 13. Roles and Access Rules
-
-The intended high-level role model is:
-
-  Capability              SUPER_ADMIN   HR_MANAGER   EMPLOYEE
-  ---------------------- ------------- ------------ ----------
-  Admin dashboard             Yes           No          No
-  HR dashboard                Yes          Yes          No
-  Employee dashboard          Yes          Yes         Yes
-  View all employees          Yes          Yes          No
-  Create employees            Yes          Yes          No
-  Update employees            Yes          Yes          No
-  Deactivate employees        Yes          Yes          No
-  View own profile            Yes          Yes         Yes
-
-The employee-management permissions are planned module-level rules. When
-implementing the module, enforce them on backend endpoints and ensure
-employees can only access their own records.
-
-## 14. Database Design -- Current and Planned
-
-### Implemented core tables
-
-The authentication implementation uses:
-
--   `users`
--   `roles`
--   `user_roles`
--   `refresh_tokens`
-
-The development configuration uses Hibernate schema update. Confirm the
-actual MySQL schema in your local database; this README describes the
-intended mappings, not a database dump.
-
-### Planned business tables
-
-The broader HRMS data model is expected to include:
-
--   `employees`
--   `departments`
--   `designations`
--   `attendance`
--   `leave_types`
--   `leave_balances`
--   `leave_requests`
--   `salary_structures`
--   `payroll`
--   `payroll_items`
--   `performance_reviews`
--   `notifications`
--   `announcements`
--   `audit_logs`
-
-These business tables are part of the project roadmap and should not be
-assumed to be implemented in the current phases.
-
-## 15. Testing Guide
-
-### Phase 1 checks
-
--   Confirm MySQL is running.
--   Confirm the backend starts on port `8085`.
--   Call the public test endpoint.
--   Confirm the React frontend can call the backend and display its JSON
-    response.
-
-### Phase 2 checks
-
--   Register a new user.
--   Confirm duplicate email registration is rejected.
--   Confirm public registration assigns only `EMPLOYEE`.
--   Log in with valid credentials.
--   Confirm invalid credentials return `401`.
--   Call protected endpoints without a token and confirm access is
-    rejected.
--   Call protected endpoints with a valid token and confirm role
-    permissions are enforced.
-
-### Phase 3 checks
-
--   Log in as `SUPER_ADMIN`, `HR_MANAGER` and `EMPLOYEE`.
--   Confirm each role sees the correct navigation links.
--   Navigate between dashboards permitted for the signed-in role.
--   Confirm protected routes redirect unauthenticated users to login.
--   Confirm login sets a refresh-token cookie.
--   Call refresh and confirm the old token is rotated.
--   Reuse the old refresh token and confirm it is rejected.
--   Refresh the browser and confirm session restoration.
--   Log out and confirm the cookie is cleared and the refresh session is
-    revoked.
--   Attempt session restoration after logout and confirm the user
-    remains logged out.
-
-### Useful MySQL inspection query
-
-``` sql
-SELECT id, user_id, revoked, expires_at, created_at
-FROM refresh_tokens;
-```
-
-Do not select or expose real token material in screenshots, logs or
-shared documentation. The table stores hashes rather than raw refresh
-tokens.
-
-## 16. Git and Commit Workflow
-
-Run Git commands from the repository root.
-
-### Check changes
+## Profile Image Storage
+
+Profile images are currently stored on the backend filesystem, using the
+configured `app.upload.profile-dir`. In the local development setup this
+is `uploads/profiles`.
+
+The upload directory is runtime data and is excluded from Git. A fresh
+clone will not contain previously uploaded profile images. For a
+production deployment, use persistent storage or an object-storage
+service and configure backups, access controls and lifecycle policies.
+
+## Testing and Verification
+
+The completed development checks include:
+
+-   React-to-Spring Boot test endpoint integration.
+-   Registration and login.
+-   BCrypt password verification.
+-   JWT-protected endpoint access.
+-   Role-based access checks for admin, HR and employee roles.
+-   Refresh-token rotation, logout and browser session restoration.
+-   Department and designation operations.
+-   Employee creation, retrieval, update, deactivation and search
+    filters.
+-   Employee self-profile retrieval and update.
+-   Profile image upload, retrieval, replacement and removal.
+-   Invalid file rejection and 2 MB upload-size handling.
+-   Profile form validation and error display.
+-   Profile completion percentage updates.
+-   Responsive profile page checks at mobile, tablet and desktop sizes.
+-   Final Phase 4 regression checklist completed by the developer.
+
+Run backend tests with:
 
 ``` bash
-git status
-git diff --check
+cd worksphere-backend
+mvn test
 ```
 
-### Check that local secrets are ignored
+Run frontend checks using the scripts defined in
+`worksphere-frontend/package.json`, for example:
 
 ``` bash
-git check-ignore -v worksphere-backend/src/main/resources/application.properties
-git check-ignore -v worksphere-frontend/.env
+cd worksphere-frontend
+npm run
 ```
 
-If a local secret file is already tracked, `.gitignore` alone will not
-remove it from Git history or the index. Remove it from tracking
-carefully and rotate any secret that was exposed.
+Only scripts that are actually defined in `package.json` can be run.
 
-### Stage Phase 1--3 project files
+## Security Notes
 
-Review the output before committing:
+-   Use BCrypt for password hashing; passwords must never be stored in
+    plain text.
+-   Public registration must not allow users to grant themselves
+    elevated roles.
+-   Keep access tokens short-lived and refresh tokens protected.
+-   Store only hashed refresh-token values in the database.
+-   Keep JWT secrets and database credentials outside Git.
+-   Enforce role and ownership checks on the backend.
+-   The frontend route guard does not replace backend authorization.
+-   Profile image uploads must be size-limited and content-validated.
+-   Local profile image files are not committed to the repository.
+-   The current local refresh-cookie settings and CSRF configuration
+    require production hardening. Use HTTPS, secure cookies and an
+    appropriate CSRF strategy for cookie-authenticated endpoints.
+-   Review exception handling, logging, rate limiting, token reuse
+    detection and file-storage controls before production deployment.
 
-``` bash
-git add README.md
-git add .gitignore
-git add docs/
-git add database/
-git add worksphere-frontend/
-git add worksphere-backend/
-git status
-```
-
-Do not stage local secret files, `node_modules`, build output, generated
-logs or IDE-specific files.
-
-### Suggested commit messages
-
-``` bash
-git commit -m "Complete Phase 1 project foundation"
-```
-
-``` bash
-git commit -m "Implement Phase 2 authentication and authorization"
-```
-
-``` bash
-git commit -m "Complete Phase 3 frontend authentication integration"
-```
-
-If the phases are already committed separately, commit only the
-remaining README and documentation changes:
-
-``` bash
-git add README.md docs/
-git commit -m "Update WorkSphere project documentation through Phase 3"
-```
-
-Push the current branch:
-
-``` bash
-git push origin main
-```
-
-Use your actual branch name if it is not `main`.
-
-## 17. Security Considerations
-
--   Passwords are hashed using BCrypt; do not store plaintext passwords.
--   Public registration must not allow a client to choose elevated
-    roles.
--   JWT secrets and database credentials must remain outside Git.
--   The access token is held in React memory, not localStorage.
--   The refresh token is delivered in an HttpOnly cookie; only its hash
-    is stored in the database.
--   Frontend route guards are not a replacement for backend
-    authorization.
--   Enforce record ownership in backend services and controllers.
--   The local development cookie currently uses `secure(false)` because
-    the local app uses HTTP. Production must use HTTPS and
-    `secure(true)`.
--   CORS must use explicit trusted origins when credentials are enabled.
-
-## 18. Known Limitations and Future Hardening
-
-Before production use, address the following:
-
-1.  **CSRF protection:** The described development SecurityConfig
-    disables CSRF. Because refresh and logout use cookies, implement and
-    test an appropriate CSRF defense before production. `SameSite=Lax`
-    is useful but should not be treated as a complete CSRF strategy.
-2.  **Concurrent refresh requests:** Add single-flight refresh handling
-    so simultaneous 401 responses share one refresh operation. Otherwise
-    concurrent requests may race while rotating the same refresh token.
-3.  **Refresh-token reuse detection:** A revoked token replay should be
-    detected and can trigger revocation of the related token
-    family/session.
-4.  **Refresh-session management:** Consider tracking token families,
-    device/session metadata, and per-session revocation.
-5.  **Expired-token cleanup:** Add scheduled cleanup for expired
-    refresh-token rows.
-6.  **Rate limiting:** Protect login and refresh endpoints against
-    brute-force and abuse.
-7.  **Centralized errors:** Standardize API error responses using a
-    global exception handler.
-8.  **Automated tests:** Add unit and integration tests for
-    authentication, refresh rotation, logout and role access.
-9.  **Production configuration:** Use HTTPS, secure cookies, managed
-    secrets and production-specific CORS origins.
-10. **Audit logging:** Record security-sensitive actions without logging
-    credentials or raw tokens.
-
-## 19. Roadmap
-
-The initial project plan is 12 weeks. The next planned development phase
-is Employee Management.
+## Roadmap
 
   -----------------------------------------------------------------------
   Phase                   Scope                   Status
   ----------------------- ----------------------- -----------------------
-  1                       Project setup,          Completed
-                          React/Spring Boot       
-                          foundation, MySQL and   
-                          API integration         
+  Phase 1                 Project setup, database Completed
+                          and frontend/backend    
+                          integration             
 
-  2                       Backend registration,   Completed
-                          login, JWT and RBAC     
+  Phase 2                 Authentication, JWT,    Completed
+                          refresh tokens and RBAC 
 
-  3                       Frontend                Completed
-                          authentication,         
-                          protected routes,       
-                          refresh sessions and    
-                          logout                  
+  Phase 3                 React authentication    Completed
+                          integration and         
+                          protected routes        
 
-  4                       Employee Management     Next
+  Phase 4                 Department,             Completed
+                          designation, employee   
+                          and profile management  
 
-  5                       Departments and         Planned
-                          Designations            
+  Phase 5                 Attendance management   Planned
 
-  6                       Attendance Management   Planned
+  Phase 6                 Leave management        Planned
 
-  7                       Leave Management        Planned
+  Phase 7                 Payroll management      Planned
 
-  8                       Payroll Management      Planned
+  Phase 8                 Performance management  Planned
 
-  9                       Performance Management  Planned
+  Phase 9                 Dashboard,              Planned
+                          notifications and       
+                          reports                 
 
-  10                      Dashboard and Reports   Planned
+  Phase 10                Frontend polish and     Planned
+                          user experience         
 
-  11                      Testing, optimization   Planned
-                          and UI polish           
+  Phase 11                Testing and             Planned
+                          optimization            
 
-  12                      Docker, CI/CD,          Planned
-                          deployment and final    
+  Phase 12                Docker, CI/CD,          Planned
+                          deployment and          
                           documentation           
   -----------------------------------------------------------------------
 
-## 20. Documentation
+Planned modules are roadmap items and should not be interpreted as
+implemented features.
 
-Keep implementation reports in the `docs/` directory. The Phase 3 report
-should describe the frontend authentication integration and
-refresh-token lifecycle.
+## Git Workflow
 
-Suggested documentation files:
+Before pushing changes:
 
--   `docs/Phase_1_Project_Setup_Report.docx`
--   `docs/Phase_2_Authentication_Authorization_Report.docx`
--   `docs/WorkSphere_Phase_3_Implementation_Report.docx`
+``` bash
+git status
+```
 
-Only include report files that actually exist in the repository.
+Review the staged files and verify that no secrets, local environment
+files, database dumps or uploaded profile images are included.
 
-------------------------------------------------------------------------
+``` bash
+git add .
+git status
+git commit -m "Complete Phase 4: Employee Management and Profile"
+git push origin main
+```
 
-**WorkSphere -- Enterprise HR & Workforce Management System**\
-Built with React, Java, Spring Boot and MySQL.
+If the branch is not `main`, push the current branch instead.
+
+## License
+
+Add a license file if you intend to distribute this project publicly.
+Until a license is added, do not assume that others have permission to
+reuse the source code.

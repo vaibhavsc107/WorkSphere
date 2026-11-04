@@ -1,6 +1,12 @@
 package com.project.WorkSphere.user.entity;
 
 import java.util.HashSet;
+
+import jakarta.persistence.OneToOne;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
+import com.project.WorkSphere.employee.entity.Employee;
 import java.util.Set;
 
 import com.project.WorkSphere.role.entity.Role;
@@ -45,4 +51,9 @@ public class User {
     public void addRole(Role role) {
         this.roles.add(role);
     }
+    
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Employee employee;
 }

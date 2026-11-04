@@ -2,6 +2,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Users, Building2 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
+import { UserRound } from "lucide-react";
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -47,11 +48,18 @@ const DashboardLayout = ({ children }) => {
     : []),
 
   {
-    name: "Employee Dashboard",
-    label: "Employee Dashboard",
-    path: "/employee/dashboard",
-    icon: LayoutDashboard,
-  },
+  name: "Employee Dashboard",
+  label: "Employee Dashboard",
+  path: "/employee/dashboard",
+  icon: LayoutDashboard,
+},
+
+{
+  name: "My Profile",
+  label: "My Profile",
+  path: "/employee/profile",
+  icon: UserRound,
+},
 
   ...(user?.roles?.some((role) =>
     ["SUPER_ADMIN", "HR_MANAGER"].includes(role)
@@ -61,8 +69,9 @@ const DashboardLayout = ({ children }) => {
             name: "Employees",
           label: "Employees",
           path: "/employees",
-          icon: Users,
+          icon: Users,        
         },
+        
         {
           name: "Departments",
           label: "Departments",
